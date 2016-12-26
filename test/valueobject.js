@@ -9,19 +9,26 @@ const ValueObject = require('../lib/valueobject');
 
 describe('valueobject', () => {
     type TestValueType = {
-        property1: string;
+        property1?: string;
+        property2?: string;
     };
 
     class TestValueObject extends ValueObject<TestValueType> {
-        static get schema() {
+        get schema() {
             return Joi.object({
                 property1: Joi.string().max(5).required()
+            });
+        }
+
+        get updateSchema() {
+            return this.schema.keys({
+                property2: Joi.strip()
             });
         }
     }
 
     it('should create a simple value object class', () => {
-        const testValue = new TestValueObject({
+        const testValue = TestValueObject.create({
             property1: 'value'
         });
 
@@ -29,7 +36,7 @@ describe('valueobject', () => {
     });
 
     it('it should update', () => {
-        const testValue1 = new TestValueObject({
+        const testValue1 = TestValueObject.create({
             property1: 'value'
         });
 
@@ -40,7 +47,7 @@ describe('valueobject', () => {
     });
 
     it('should not be valid if wrong data', () => {
-        let testValue = new TestValueObject({
+        let testValue = TestValueObject.create({
             property1: Joi.string().max(5).required()
         });
 
@@ -55,8 +62,16 @@ describe('valueobject', () => {
 
     it('should get value json representation', () => {
         const jsValue = {property1: 'value'};
-        const testValue = new TestValueObject(jsValue);
+        const testValue = TestValueObject.create(jsValue);
 
         expect(testValue.toJSON()).to.be.deep.equal(jsValue);
+    });
+
+    it('should use update schema', () => {
+        let testValue = TestValueObject.create({property1: 'test'});
+
+        testValue = testValue.update({property2: 'value2'});
+
+        expect(testValue.data.has('property2')).to.be.false; // eslint-disable-line
     });
 });

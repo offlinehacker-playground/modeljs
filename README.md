@@ -64,34 +64,75 @@ user3.get('password') === user2.get('password'); // returns false, since ValueOb
 ### Entity
 
 Entity is a base model class that can be used for implementing domain
-application logic. It is composed of four main components:
-
-- identity: evey entity has to have an identity
-- data: **ValueObject** data assocaited with a model
-- state: state in which model is
-- context: context on which model operates
-
-This separation allows greate flexibility. For example by separating data and
-state, these to can be serialized separately. While it's true that data
-sometimes present entity state, this is not alloways the case and allows to
-manage state separately.
+application logic. It encapsulates ValueObject and provides change tracking
+of model data. User can provide any additional state by extending Entity object.
 
 **Example Entity**
 
 ```
 const Entity = require('modeljs').Entity;
+const ValueObject = require('modeljs').ValueObject;
 
 type User = {
-	useraname: string;
-	password: string;
+	username?: string;
+	password?: string;
 };
 
-type State = {
+type ResourceState = {
+	id?: string;
 	createdAt: Date;
-	updatedAt: Date;
+	updatedAt?: Date;
 };
 
-class UserModel extends Entity<UserModel, User, State>
+class Resource<T, D: Object, S: ResourceState> extends Entity<T, D, S> {
+	get InitialState() {
+		return {createdAt: new Date()};
+	}
+
+	update(data: D) {
+		super.update(data);
+		this.state.updatedAt = new Date();
+	}
+}
+
+class UserValueObject extends ValueObject<User> {
+	get schema() {
+		return Joi.object({
+			username: Joi.string().required(),
+			password: Joi.string().min(8)
+		});
+	}
+
+	get updateSchema() {
+		return this.schema.keys({
+			username: Joi.strip()
+		});
+	}
+}
+
+class CreateUserValueObject extends UserValueObject {
+	get schema() {
+		return super.schema.requiredKeys(['password']);
+	}
+}
+
+type UserState = ResourceState & {
+	hashedPassword: string;
+};
+
+class UserModel extends Resource<UserModel, User, UserState> {
+	get ValueObject() {
+		if (this.isNew) {
+			return CreateUserValueObject;
+		}
+
+		return UserValueObject;
+	}
+
+	get InitialState() {
+		return {createdAt: new Date(), activated: false};
+	}
+}
 ```
 
 ## Installation
