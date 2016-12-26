@@ -100,6 +100,11 @@ class UserModel extends Entity<UserModel, User, State>
 npm install modeljs
 ```
 
+### Flowtype support
+
+To make flowtype working in your application, do not forget to add package path
+to flowconfig file.
+
 ## API
 
 See [API](API.md) reference
