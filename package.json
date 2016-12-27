@@ -1,6 +1,6 @@
 {
   "name": "modeljs",
-  "version": "0.1.2",
+  "version": "0.0.0",
   "description": "Domain driven designed base models with flowtype support",
   "main": "dist/index.js",
   "scripts": {
