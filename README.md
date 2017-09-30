@@ -2,6 +2,8 @@
 
 # ModelJS
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/offlinehacker/modeljs.svg)](https://greenkeeper.io/)
+
 Domain driven designed base models with flowtype support
 
 **This project is work in progress**
